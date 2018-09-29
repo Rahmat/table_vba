@@ -8,9 +8,13 @@ Dim InputWS As Worksheet
 
 Dim CurrentRow As Integer
 
-Sub ClearSheet(sheet_name As String)
-    Sheets(sheet_name).UsedRange.Clear
-End Sub
+'Function SetColumnsWidth(SheetName As String, WidthSize As Integer)
+    'ActiveWorkbook.Sheets(SheetName).UsedRange.ColumnWidth = WidthSize
+'End Function
+
+Function ClearSheet(SheetName As String)
+    ActiveWorkbook.Sheets(SheetName).UsedRange.Clear
+End Function
 
 Function CreateWorksheet(NewSheetName As String)
     Dim NewSheet As Object
@@ -98,10 +102,10 @@ End Function
 Function InsertColumnTitles()
     OutputWS.Range("A5") = "Code"
     OutputWS.Range("B5") = "Description"
-    OutputWS.Range("D5") = "Dept Name"
-    OutputWS.Range("E5") = "Dept code"
-    OutputWS.Range("F5") = "Qty/Weight"
-    OutputWS.Range("G5") = "Amount"
+    OutputWS.Range("C5") = "Dept Name"
+    OutputWS.Range("D5") = "Dept code"
+    OutputWS.Range("E5") = "Qty/Weight"
+    OutputWS.Range("F5") = "Amount"
     
     CurrentRow = 5
 End Function
@@ -111,10 +115,10 @@ Function InsertNextItemRow(Code As String, Description As String, DeptName As St
     
     OutputWS.Cells(CurrentRow, 1) = Code
     OutputWS.Cells(CurrentRow, 2) = Description
-    OutputWS.Cells(CurrentRow, 4) = DeptName
-    OutputWS.Cells(CurrentRow, 5) = DeptCode
-    OutputWS.Cells(CurrentRow, 6) = QtyOrWeight
-    OutputWS.Cells(CurrentRow, 7) = Amount
+    OutputWS.Cells(CurrentRow, 3) = DeptName
+    OutputWS.Cells(CurrentRow, 4) = DeptCode
+    OutputWS.Cells(CurrentRow, 5) = QtyOrWeight
+    OutputWS.Cells(CurrentRow, 6) = Amount
 End Function
 
 Function InsertItemMultiTotalsBySubDepartment()
@@ -161,7 +165,8 @@ Sub Main()
     Application.ScreenUpdating = True
 End Sub
 
-Function t()
+Sub t()
+    Call SetColumnWidth("Output", 20)
     'Debug.Print (ActiveWorkbook.Sheets(1).Name)
     'Debug.Print (ActiveWorkbook.Worksheets.Count)
-End Function
+End Sub
