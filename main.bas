@@ -44,22 +44,39 @@ Function ExportSheet(FromSheet As String, ToSheet As String, Optional ImportRang
 End Function
 
 Function GetSheetNames()
-    If Debugging Then
-        InputSheetName = "Original"
-        OutputSheetName = "Output"
-    End If
-Z
-    If Not Debugging Then
-        If ActiveWorkbook.Worksheets.Count > 1 Then
+    Debug.Print (ActiveWorkbook.Worksheets.Count)
+    If ActiveWorkbook.Worksheets.Count = 1 Then
+        InputSheetName = ActiveWorkbook.Sheets(1).Name
+    ElseIf ActiveWorkbook.Worksheets.Count = 2 Then
+        Dim i As Integer
+        Dim WorksheetNumber As Integer
+        
+        For i = 1 To 2
+            Debug.Print (ActiveWorkbook.Sheets(i).Name)
+            Debug.Print (ActiveWorkbook.Sheets(i).Name = "Output")
+            If ActiveWorkbook.Sheets(i).Name = "Output" Then
+                If i = 1 Then
+                    WorksheetNumber = 2
+                Else
+                    WorksheetNumber = 1
+                End If
+                InputSheetName = ActiveWorkbook.Sheets(WorksheetNumber).Name
+                Debug.Print ("t: " + InputSheetName)
+            End If
+        Next i
+        If InputSheetName = "" Then
+            Debug.Print (1)
             InputSheetName = InputBox("Multiple Sheets detected. What is the Input sheet's name?", "Enter Input sheet's name", InputSheetName)
-        Else
-            InputSheetName = ActiveWorkbook.Sheets(1).Name
         End If
+    Else
+        Debug.Print (2)
+        InputSheetName = InputBox("Multiple Sheets detected. What is the Input sheet's name?", "Enter Input sheet's name", InputSheetName)
     End If
+    
     If WorksheetExists(InputSheetName) Then
         Set InputWS = ActiveWorkbook.Sheets(InputSheetName)
     Else
-        MsgBox ("'" + InputSheetName + "' was not found in this workbook (" + ActiveWorkbook.Name + "). Terminating.")
+        MsgBox ("'" + InputSheetName + "' InputSheet was not found in this workbook (" + ActiveWorkbook.Name + "). Terminating.")
         End
     End If
     
@@ -73,7 +90,7 @@ Z
     End If
     If Not WorksheetExists(OutputSheetName) Then
         If Debugging Then
-            MsgBox ("'" + OutputSheetName + "' was not found in this workbook (" + ActiveWorkbook.Name + "). Creating that now.")
+            MsgBox ("'" + OutputSheetName + "' OutputSheet was not found in this workbook (" + ActiveWorkbook.Name + "). Creating that now.")
         End If
         CreateWorksheet (OutputSheetName)
     End If
@@ -112,7 +129,7 @@ Function InsertNextItemRow(Code As String, Description As String, DeptName As St
 End Function
 
 Function InsertItemMultiTotalsBySubDepartment()
-    Dim i As Integer
+    Dim i As Long
     
     Dim CurrentDeptName As String
     Dim CurrentDeptCode As String
@@ -121,6 +138,10 @@ Function InsertItemMultiTotalsBySubDepartment()
     Dim QtyOrWeight As String
     Dim Amount As String
     
+    Debug.Print (InputWS.UsedRange.Rows.Count)
+    For i = 6 To 39784
+        i = i
+    Next i
     For i = 6 To InputWS.UsedRange.Rows.Count
         Value = InputWS.Cells(i, 1)
         
@@ -143,7 +164,7 @@ Function InsertItemMultiTotalsBySubDepartment()
 End Function
 
 Sub Main()
-    Debugging = False
+    Debugging = True
     
     Application.ScreenUpdating = False
     
