@@ -8,6 +8,10 @@ Dim InputWS As Worksheet
 
 Dim CurrentRow As Integer
 
+Sub ClearSheet(sheet_name As String)
+    Sheets(sheet_name).UsedRange.Clear
+End Sub
+
 Function CreateWorksheet(NewSheetName As String)
     Dim NewSheet As Object
     
@@ -43,33 +47,18 @@ Function ExportSheet(FromSheet As String, ToSheet As String, Optional ImportRang
     Application.CutCopyMode = False
 End Function
 
-Function GetSheetNames()
-    Debug.Print (ActiveWorkbook.Worksheets.Count)
-    If ActiveWorkbook.Worksheets.Count = 1 Then
+Function SetupSheets()
+    If ActiveWorkbook.Worksheets.Count = 1 Then 'If just 1 sheet, then that's the input sheet
         InputSheetName = ActiveWorkbook.Sheets(1).Name
-    ElseIf ActiveWorkbook.Worksheets.Count = 2 Then
-        Dim i As Integer
-        Dim WorksheetNumber As Integer
-        
-        For i = 1 To 2
-            Debug.Print (ActiveWorkbook.Sheets(i).Name)
-            Debug.Print (ActiveWorkbook.Sheets(i).Name = "Output")
-            If ActiveWorkbook.Sheets(i).Name = "Output" Then
-                If i = 1 Then
-                    WorksheetNumber = 2
-                Else
-                    WorksheetNumber = 1
-                End If
-                InputSheetName = ActiveWorkbook.Sheets(WorksheetNumber).Name
-                Debug.Print ("t: " + InputSheetName)
-            End If
-        Next i
-        If InputSheetName = "" Then
-            Debug.Print (1)
-            InputSheetName = InputBox("Multiple Sheets detected. What is the Input sheet's name?", "Enter Input sheet's name", InputSheetName)
+    ElseIf ActiveWorkbook.Worksheets.Count = 2 Then 'If 2 sheets, then if one is named Output, we can assume the other is Input
+        If ActiveWorkbook.Sheets(1).Name = "Output" Then 'check first sheet for output
+            InputSheetName = ActiveWorkbook.Sheets(2).Name
+        ElseIf ActiveWorkboo.Sheets(2).Name = "Output" Then 'check second
+            InputSheetName = ActiveWorkbook.Sheets(1).Name
         End If
-    Else
-        Debug.Print (2)
+    End If
+        
+    If InputSheetName = "" Then 'If more than 2 sheets or failed to get a sheetname
         InputSheetName = InputBox("Multiple Sheets detected. What is the Input sheet's name?", "Enter Input sheet's name", InputSheetName)
     End If
     
@@ -80,23 +69,23 @@ Function GetSheetNames()
         End
     End If
     
-    If Not Debugging Then
-        'OutputSheetName = InputBox("What sheet name do you want to output to?", "Enter Output sheet's name", OutputSheetName)
-        OutputSheetName = "Output"
-    End If
+    OutputSheetName = "Output"
+    'OutputSheetName = InputBox("What sheet name do you want to output to?", "Enter Output sheet's name", OutputSheetName)
+        
     If OutputSheetName = vbNullString Then
         MsgBox ("No Output Sheet Name detected, using 'Output' as the Name")
         OutputSheetName = "Output"
     End If
     If Not WorksheetExists(OutputSheetName) Then
         If Debugging Then
-            MsgBox ("'" + OutputSheetName + "' OutputSheet was not found in this workbook (" + ActiveWorkbook.Name + "). Creating that now.")
+            Debug.Print ("'" + OutputSheetName + "' OutputSheet was not found in this workbook (" + ActiveWorkbook.Name + "). Creating that now.")
         End If
         CreateWorksheet (OutputSheetName)
     End If
     
     If WorksheetExists(OutputSheetName) Then
         Set OutputWS = ActiveWorkbook.Sheets(OutputSheetName)
+        ClearSheet (OutputSheetName)
     Else
         Call Err.Raise(0, "My Application", "Error finding " + OutputSheetName + " this code should be fixed.")
     End If
@@ -138,10 +127,6 @@ Function InsertItemMultiTotalsBySubDepartment()
     Dim QtyOrWeight As String
     Dim Amount As String
     
-    Debug.Print (InputWS.UsedRange.Rows.Count)
-    For i = 6 To 39784
-        i = i
-    Next i
     For i = 6 To InputWS.UsedRange.Rows.Count
         Value = InputWS.Cells(i, 1)
         
@@ -150,13 +135,13 @@ Function InsertItemMultiTotalsBySubDepartment()
         ElseIf Value < 10000 Then 'Dept Code found
             CurrentDeptCode = InputWS.Cells(i, 1)
             CurrentDeptName = InputWS.Cells(i, 1 + 1)
-            Debug.Print (CurrentDeptCode + CurrentDeptName)
+            'Debug.Print (CurrentDeptCode + CurrentDeptName)
         ElseIf Value > 10000 Then 'Item Code found
             Code = InputWS.Cells(i, 1)
             Description = InputWS.Cells(i, 1 + 2)
             QtyOrWeight = InputWS.Cells(i + 1, 1 + 7)
             Amount = InputWS.Cells(i + 1, 1 + 8)
-            Debug.Print (Code + Description + QtyOrWeight + Amount)
+            'Debug.Print (Code + Description + QtyOrWeight + Amount)
             Call InsertNextItemRow(Code, Description, CurrentDeptName, CurrentDeptCode, QtyOrWeight, Amount)
         End If
     Next i
@@ -168,7 +153,7 @@ Sub Main()
     
     Application.ScreenUpdating = False
     
-    Call GetSheetNames
+    Call SetupSheets
     Call ExportFirst4Rows
     Call InsertColumnTitles
     Call InsertItemMultiTotalsBySubDepartment
