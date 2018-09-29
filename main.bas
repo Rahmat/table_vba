@@ -52,7 +52,9 @@ Function ExportSheet(FromSheet As String, ToSheet As String, Optional ImportRang
 End Function
 
 Function SetupSheets()
-    If ActiveWorkbook.Worksheets.Count = 1 Then 'If just 1 sheet, then that's the input sheet
+    If Not ActiveWorkbook.ActiveSheet.Name = "Output" Then
+        InputSheetName = ActiveWorkbook.ActiveSheet.Name
+    ElseIf ActiveWorkbook.Worksheets.Count = 1 Then 'If just 1 sheet, then that's the input sheet
         InputSheetName = ActiveWorkbook.Sheets(1).Name
     ElseIf ActiveWorkbook.Worksheets.Count = 2 Then 'If 2 sheets, then if one is named Output, we can assume the other is Input
         If ActiveWorkbook.Sheets(1).Name = "Output" Then 'check first sheet for output
