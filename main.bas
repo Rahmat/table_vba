@@ -1,5 +1,10 @@
 Dim Debugging As Boolean
 
+Dim ScreenUpdateState As Boolean
+Dim StatusBarState  As Boolean
+Dim CalcState As Variant
+Dim EventsState  As Boolean
+
 Dim InputSheetName As String
 Dim OutputSheetName As String
 
@@ -8,9 +13,60 @@ Dim InputWS As Worksheet
 
 Dim CurrentRow As Integer
 
+Function SetGlobalsToDefault()
+    Dim EmptyWS As Worksheet
+
+    InputSheetName = ""
+    OutputSheetName = ""
+    
+    'If Not TypeName(OutputWS) = "Nothing" Then
+    '    OutputWS.Copy After:=EmptyWS
+    '    OutputWS = Nothing
+    'End If
+    '
+    'If Not TypeName(InputWS) = "Nothing" Then
+    '    InputWS = EmptyWS
+    'End If
+    
+    CurrentRow = 0
+End Function
+
+Function MakeRowBold(RowNumber As Long)
+    Range("A" + CStr(RowNumber)).EntireRow.Font.Bold = True
+End Function
+
+Function MySetup()
+    SetGlobalsToDefault
+    Debugging = True
+
+    'Save parameters
+    ScreenUpdateState = Application.ScreenUpdating
+    StatusBarState = Application.DisplayStatusBar
+    CalcState = Application.Calculation
+    EventsState = Application.EnableEvents
+
+    'Turn them off
+    Application.ScreenUpdating = False
+    Application.DisplayStatusBar = False
+    Application.Calculation = xlCalculationManual
+    Application.EnableEvents = False
+End Function
+
+Function MyOnTerminate()
+    'Turn them back to normal
+    Application.ScreenUpdating = ScreenUpdateState
+    Application.DisplayStatusBar = StatusBarState
+    Application.Calculation = CalcState
+    Application.EnableEvents = EventsState
+End Function
+
 'Function SetColumnsWidth(SheetName As String, WidthSize As Integer)
     'ActiveWorkbook.Sheets(SheetName).UsedRange.ColumnWidth = WidthSize
 'End Function
+
+Function SetColumnWidth(ColumnName As String, WidthSize As Integer)
+    Columns(ColumnName).ColumnWidth = WidthSize
+End Function
 
 Function ClearSheet(SheetName As String)
     ActiveWorkbook.Sheets(SheetName).UsedRange.Clear
@@ -95,10 +151,14 @@ Function SetupSheets()
     Else
         Call Err.Raise(0, "My Application", "Error finding " + OutputSheetName + " this code should be fixed.")
     End If
+    
+    OutputWS.Activate
 End Function
 
-Function ExportFirst4Rows()
-    Call ExportSheet(InputSheetName, OutputSheetName, "A1:Z4")
+Function ExportRows(BeginningRow As Integer, EndingRow As Integer)
+    Dim MyRange As String
+    MyRange = "A" + CStr(BeginningRow) + ":DZ" + CStr(EndingRow)
+    Call ExportSheet(InputSheetName, OutputSheetName, MyRange) '"A1:Z4"
 End Function
 
 Function InsertColumnTitles()
@@ -123,11 +183,25 @@ Function InsertNextItemRow(Code As String, Description As String, DeptName As St
     OutputWS.Cells(CurrentRow, 6) = Amount
 End Function
 
+Function IsDeptCode(Code) As Boolean
+    If Code < 1101 Or Code = 9999 Then
+        IsDeptCode = True
+    End If
+End Function
+
+Function IsItemCode(Code) As Boolean
+    If Code > 1101 And Not Code = 9999 Then
+        IsItemCode = True
+    End If
+End Function
+
 Function InsertItemMultiTotalsBySubDepartment()
     Dim i As Long
     
     Dim CurrentDeptName As String
     Dim CurrentDeptCode As String
+    Dim OldDeptName As String
+    Dim OldDeptCode As String
     Dim Code As String
     Dim Description As String
     Dim QtyOrWeight As String
@@ -136,39 +210,79 @@ Function InsertItemMultiTotalsBySubDepartment()
     For i = 6 To InputWS.UsedRange.Rows.Count
         Value = InputWS.Cells(i, 1)
         
-        If Value = vbNullString Or Not IsNumeric(Value) Then 'No value or not a number, skip
+        If Value = vbNullString Or Not IsNumeric(Value) Then 'Nothing there, or it's not a number. skip.
             'Do Nothing (There is no continue statement in VBA)
-        ElseIf Value < 10000 Then 'Dept Code found
+        ElseIf IsDeptCode(Value) Then
+            OldDeptCode = CurrentDeptCode
+            OldDeptName = CurrentDeptName
             CurrentDeptCode = InputWS.Cells(i, 1)
             CurrentDeptName = InputWS.Cells(i, 1 + 1)
+            
+            If CurrentDeptName = vbNullString Then
+                CurrentDeptName = OldDeptName 'https://i.imgur.com/kLFsrI4.png line 1303s code error would set CurrentDeptName to nothing
+            End If
             'Debug.Print (CurrentDeptCode + CurrentDeptName)
-        ElseIf Value > 10000 Then 'Item Code found
+        ElseIf IsItemCode(Value) Then
             Code = InputWS.Cells(i, 1)
             Description = InputWS.Cells(i, 1 + 2)
             QtyOrWeight = InputWS.Cells(i + 1, 1 + 7)
             Amount = InputWS.Cells(i + 1, 1 + 8)
             'Debug.Print (Code + Description + QtyOrWeight + Amount)
+            'Debug.Print (Len(Code))
             Call InsertNextItemRow(Code, Description, CurrentDeptName, CurrentDeptCode, QtyOrWeight, Amount)
         End If
     Next i
     
+    'formatting
+    Call SetColumnWidth("A", 13)
+    Call SetColumnWidth("B", 26)
+    Call SetColumnWidth("C", 16)
+    Call SetColumnWidth("D", 11)
+    Call SetColumnWidth("E", 11)
+    Call SetColumnWidth("F", 8)
+    MakeRowBold (5)
+    Columns("A").NumberFormat = 0
 End Function
 
-Sub Main()
-    Debugging = True
+Sub ItemMultiTotals() 'ItemMultiTotalsBySubDepartment()
+    Debug.Print ("hi")
+    Debug.Print (TypeName(OutputWS))
     
-    Application.ScreenUpdating = False
+    'Debug.Print (OutputWS.Name)
+    Call MySetup
     
     Call SetupSheets
-    Call ExportFirst4Rows
+    Call ExportRows(1, 4)
     Call InsertColumnTitles
     Call InsertItemMultiTotalsBySubDepartment
     
-    Application.ScreenUpdating = True
+    OutputWS.Activate
+    
+    Call MyOnTerminate
 End Sub
 
-Sub t()
-    Call SetColumnWidth("Output", 20)
+Function CustomerMultiTotals()
+    Call MySetup
+    
+    Call SetupSheets
+    Call ExportRows(1, 5)
+    'Call InsertColumnTitles
+    'Call InsertItemMultiTotalsBySubDepartment
+    
+    Call MyOnTerminate
+End Function
+
+
+Function t()
+    Columns("A").NumberFormat = 0
+    'MakeRowBold (5)
+    
+    'Call SetColumnWidth("A", 13)
+    
+    'Debug.Print (TypeName(Application.Calculation))
+    
     'Debug.Print (ActiveWorkbook.Sheets(1).Name)
     'Debug.Print (ActiveWorkbook.Worksheets.Count)
-End Sub
+End Function
+
+
