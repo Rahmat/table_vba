@@ -90,7 +90,7 @@ Function WorksheetExists(sName As String) As Boolean
     WorksheetExists = Evaluate("ISREF('" & sName & "'!A1)")
 End Function
     
-Function ExportSheet(FromSheet As String, ToSheet As String, Optional ImportRange As String = vbNullString, Optional ExportRange As String = vbNullString)
+Function ExportSheet(FromSheet As String, ToSheet As String, Optional ImportRange As String = vbNullString, Optional ExportRange As String = vbNullString, Optional KeepFormatting As Boolean = True)
     Application.CutCopyMode = True
     
     If ImportRange = vbNullString Then
@@ -105,7 +105,10 @@ Function ExportSheet(FromSheet As String, ToSheet As String, Optional ImportRang
     End If
      
     Sheets(ToSheet).Range(ExportRange).PasteSpecial Paste:=xlPasteValues
-    Sheets(ToSheet).Range(ExportRange).PasteSpecial Paste:=xlPasteFormats
+    
+    If KeepFormatting Then
+        Sheets(ToSheet).Range(ExportRange).PasteSpecial Paste:=xlPasteFormats
+    End If
     
     Application.CutCopyMode = False
 End Function
@@ -158,14 +161,14 @@ Function SetupSheets()
     OutputWS.Activate
 End Function
 
-Public Function ExportRows(BeginningRow As Integer, EndingRow As Integer)
+Public Function ExportRows(BeginningRow As Integer, EndingRow As Integer, Optional KeepFormatting As Boolean = True)
     Dim MyRange As String
     MyRange = "A" + CStr(BeginningRow) + ":DZ" + CStr(EndingRow) 'e.g. "A1:DZ4"
-    Call ExportSheet(InputSheetName, OutputSheetName, MyRange)
+    Call ExportSheet(InputSheetName, OutputSheetName, MyRange, KeepFormatting:=KeepFormatting)
 End Function
 
-Public Function ExportCell(InputCell As String, OutputCell As String)
-    Call ExportSheet(InputSheetName, OutputSheetName, InputCell, OutputCell)
+Public Function ExportCell(InputCell As String, OutputCell As String, Optional KeepFormatting As Boolean = True)
+    Call ExportSheet(InputSheetName, OutputSheetName, InputCell, OutputCell, KeepFormatting)
 End Function
 
 Function InsertColumnTitles()
@@ -213,6 +216,7 @@ Function InsertItemMultiTotalsBySubDepartment()
     Dim Description As String
     Dim QtyOrWeight As String
     Dim Amount As String
+    Dim Value As Variant
     
     For i = 6 To InputWS.UsedRange.Rows.Count
         Value = InputWS.Cells(i, 1)
@@ -251,8 +255,8 @@ Function InsertItemMultiTotalsBySubDepartment()
     Columns("A").NumberFormat = 0
 End Function
 
-'v 0.2
-Function ItemMultiTotals() 'ItemMultiTotalsBySubDepartment()
+'Version 0.2
+Sub ItemMultiTotals() 'ItemMultiTotalsBySubDepartment()
     Debug.Print ("hi")
     Debug.Print (TypeName(OutputWS))
     
@@ -267,9 +271,9 @@ Function ItemMultiTotals() 'ItemMultiTotalsBySubDepartment()
     OutputWS.Activate
     
     Call MyOnTerminate
-End Function
+End Sub
 
-'v 0.0
+'Version 0.0
 Function CustomerMultiTotals()
     Call MySetup
     
@@ -281,13 +285,11 @@ Function CustomerMultiTotals()
     Call MyOnTerminate
 End Function
 
-'v 0.1
+'Version 0.1
 Sub ItemNetOptimize()
     Call MySetup
-    Debug.Print ("0")
     
     Call SetupSheets
-    Debug.Print ("1")
     
     Call ExportCell("C4", "C1")
     Call ExportCell("C13", "C3")
@@ -297,7 +299,8 @@ Sub ItemNetOptimize()
     Call ExportCell("D19", "D5")
     Call ExportCell("C19", "C5")
     Call ExportCell("B19", "B5")
-    Debug.Print ("2")
+    
+    Call MakeRowBold(5)
 
     Call MyOnTerminate
 End Sub
