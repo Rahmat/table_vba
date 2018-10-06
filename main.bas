@@ -1,3 +1,5 @@
+Option Explicit
+
 Dim Debugging As Boolean
 
 Dim ScreenUpdateState As Boolean
@@ -31,11 +33,11 @@ Function SetGlobalsToDefault()
     CurrentRow = 0
 End Function
 
-Function MakeRowBold(RowNumber As Long)
+Public Function MakeRowBold(RowNumber As Long)
     Range("A" + CStr(RowNumber)).EntireRow.Font.Bold = True
 End Function
 
-Function MySetup()
+Public Function MySetup()
     SetGlobalsToDefault
     Debugging = True
 
@@ -52,7 +54,7 @@ Function MySetup()
     Application.EnableEvents = False
 End Function
 
-Function MyOnTerminate()
+Public Function MyOnTerminate()
     'Turn them back to normal
     Application.ScreenUpdating = ScreenUpdateState
     Application.DisplayStatusBar = StatusBarState
@@ -97,12 +99,13 @@ Function ExportSheet(FromSheet As String, ToSheet As String, Optional ImportRang
         Sheets(FromSheet).Range(ImportRange).Copy
     End If
     
+    Debug.Print ("ExportRange is: " & CStr(ExportRange))
     If ExportRange = vbNullString Then
         ExportRange = "A1"
     End If
      
-    Sheets(ToSheet).Range("A1").PasteSpecial Paste:=xlPasteValues
-    Sheets(ToSheet).Range("A1").PasteSpecial Paste:=xlPasteFormats
+    Sheets(ToSheet).Range(ExportRange).PasteSpecial Paste:=xlPasteValues
+    Sheets(ToSheet).Range(ExportRange).PasteSpecial Paste:=xlPasteFormats
     
     Application.CutCopyMode = False
 End Function
@@ -115,7 +118,7 @@ Function SetupSheets()
     ElseIf ActiveWorkbook.Worksheets.Count = 2 Then 'If 2 sheets, then if one is named Output, we can assume the other is Input
         If ActiveWorkbook.Sheets(1).Name = "Output" Then 'check first sheet for output
             InputSheetName = ActiveWorkbook.Sheets(2).Name
-        ElseIf ActiveWorkboo.Sheets(2).Name = "Output" Then 'check second
+        ElseIf ActiveWorkbook.Sheets(2).Name = "Output" Then 'check second
             InputSheetName = ActiveWorkbook.Sheets(1).Name
         End If
     End If
@@ -155,10 +158,14 @@ Function SetupSheets()
     OutputWS.Activate
 End Function
 
-Function ExportRows(BeginningRow As Integer, EndingRow As Integer)
+Public Function ExportRows(BeginningRow As Integer, EndingRow As Integer)
     Dim MyRange As String
-    MyRange = "A" + CStr(BeginningRow) + ":DZ" + CStr(EndingRow)
-    Call ExportSheet(InputSheetName, OutputSheetName, MyRange) '"A1:Z4"
+    MyRange = "A" + CStr(BeginningRow) + ":DZ" + CStr(EndingRow) 'e.g. "A1:DZ4"
+    Call ExportSheet(InputSheetName, OutputSheetName, MyRange)
+End Function
+
+Public Function ExportCell(InputCell As String, OutputCell As String)
+    Call ExportSheet(InputSheetName, OutputSheetName, InputCell, OutputCell)
 End Function
 
 Function InsertColumnTitles()
@@ -244,7 +251,8 @@ Function InsertItemMultiTotalsBySubDepartment()
     Columns("A").NumberFormat = 0
 End Function
 
-Sub ItemMultiTotals() 'ItemMultiTotalsBySubDepartment()
+'v 0.2
+Function ItemMultiTotals() 'ItemMultiTotalsBySubDepartment()
     Debug.Print ("hi")
     Debug.Print (TypeName(OutputWS))
     
@@ -259,8 +267,9 @@ Sub ItemMultiTotals() 'ItemMultiTotalsBySubDepartment()
     OutputWS.Activate
     
     Call MyOnTerminate
-End Sub
+End Function
 
+'v 0.0
 Function CustomerMultiTotals()
     Call MySetup
     
@@ -271,6 +280,27 @@ Function CustomerMultiTotals()
     
     Call MyOnTerminate
 End Function
+
+'v 0.1
+Sub ItemNetOptimize()
+    Call MySetup
+    Debug.Print ("0")
+    
+    Call SetupSheets
+    Debug.Print ("1")
+    
+    Call ExportCell("C4", "C1")
+    Call ExportCell("C13", "C3")
+    Call ExportCell("B13", "B3")
+    Call ExportCell("B17", "B4")
+    Call ExportCell("G19", "E5")
+    Call ExportCell("D19", "D5")
+    Call ExportCell("C19", "C5")
+    Call ExportCell("B19", "B5")
+    Debug.Print ("2")
+
+    Call MyOnTerminate
+End Sub
 
 
 Function t()
