@@ -99,7 +99,6 @@ Function ExportSheet(FromSheet As String, ToSheet As String, Optional ImportRang
         Sheets(FromSheet).Range(ImportRange).Copy
     End If
     
-    Debug.Print ("ExportRange is: " & CStr(ExportRange))
     If ExportRange = vbNullString Then
         ExportRange = "A1"
     End If
@@ -289,6 +288,15 @@ End Function
 Sub ItemNetOptimize()
     Call MySetup
     
+    Dim i As Integer
+    For i = 1 To 10
+        Debug.Print ("Row #" & CStr(i) & " has a Height of " & Rows(i).RowHeight)
+    Next i
+    
+    For i = 1 To 10
+        Debug.Print ("Column #" & CStr(i) & " has a width of " & Columns(i).ColumnWidth)
+    Next i
+    
     Call SetupSheets
     
     Call ExportCell("C4", "C1")
@@ -300,7 +308,32 @@ Sub ItemNetOptimize()
     Call ExportCell("C19", "C5")
     Call ExportCell("B19", "B5")
     
+    Rows(1).RowHeight = 18.75
+    Rows(2).RowHeight = 0.75
+    Rows(3).RowHeight = 24
+    Rows(4).RowHeight = 15
+    Rows(5).RowHeight = 13.5
+    Columns(1).ColumnWidth = 1.14
+    Columns(2).ColumnWidth = 14
+    Columns(3).ColumnWidth = 31.29
+    Columns(4).ColumnWidth = 10.29
+    Columns(5).ColumnWidth = 10.14
+    
+    'Call ExportRows(1, 10)
+    
     Call MakeRowBold(5)
+    
+    Range("B5:E5").AutoFilter
+    
+    Rows(1).HorizontalAlignment = xlLeft
+    Rows(5).HorizontalAlignment = xlLeft
+    
+    ActiveWindow.DisplayGridlines = False
+    
+
+    
+    'Debug.Print (Rows(1).Height)
+    
 
     Call MyOnTerminate
 End Sub
