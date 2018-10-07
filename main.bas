@@ -33,8 +33,12 @@ Function SetGlobalsToDefault()
     CurrentRow = 0
 End Function
 
-Public Function MakeRowBold(RowNumber As Long)
-    Range("A" + CStr(RowNumber)).EntireRow.Font.Bold = True
+Public Function MakeRowBold(rownumber As Long)
+    Range("A" + CStr(rownumber)).EntireRow.Font.Bold = True
+End Function
+
+Public Function setrowfont(rownumber As Long, rowfont As String)
+    Range("A" + CStr(rownumber)).EntireRow.Font.Name = rowfont
 End Function
 
 Public Function MySetup()
@@ -285,17 +289,18 @@ Function CustomerMultiTotals()
 End Function
 
 'Version 0.1
-Sub ItemNetOptimize()
+Sub OptimizedItemNetSales()
     Call MySetup
     
-    Dim i As Integer
-    For i = 1 To 10
-        Debug.Print ("Row #" & CStr(i) & " has a Height of " & Rows(i).RowHeight)
-    Next i
+    Dim i As Long
     
-    For i = 1 To 10
-        Debug.Print ("Column #" & CStr(i) & " has a width of " & Columns(i).ColumnWidth)
-    Next i
+'    For i = 1 To 10
+'        Debug.Print ("Row #" & CStr(i) & " has a Height of " & Rows(i).RowHeight)
+'    Next i
+'
+'    For i = 1 To 10
+'        Debug.Print ("Column #" & CStr(i) & " has a width of " & Columns(i).ColumnWidth)
+'    Next i
     
     Call SetupSheets
     
@@ -319,21 +324,50 @@ Sub ItemNetOptimize()
     Columns(4).ColumnWidth = 10.29
     Columns(5).ColumnWidth = 10.14
     
-    'Call ExportRows(1, 10)
-    
     Call MakeRowBold(5)
     
-    Range("B5:E5").AutoFilter
+    Range("B5:E5").AutoFilter 'adds filter thing there
     
     Rows(1).HorizontalAlignment = xlLeft
     Rows(5).HorizontalAlignment = xlLeft
     
     ActiveWindow.DisplayGridlines = False
     
+    Dim StartingRow As Long
+    Dim Value As Variant
+    For i = 1 To InputWS.UsedRange.Rows.Count
+        Value = InputWS.Cells(i, "B")
+        If IsNumeric(Value) And Not Value = vbNullString Then
+            StartingRow = i
+            Debug.Print ("ayylmao: " & InputWS.Cells(i, "B"))
+            Exit For
+        End If
+    Next i
+    Debug.Print ("StartingRow is: " & CStr(StartingRow))
+    Debug.Print ("Nani: " & CStr(InputWS.Cells(StartingRow, "B")))
+    
+    Dim ValueC As Variant
+    Dim NextValueC As Variant
+    Dim OutputRow As Long
 
+    OutputRow = 6
+    For i = StartingRow To InputWS.UsedRange.Rows.Count
+        ValueC = InputWS.Cells(i, "C")
+        NextValueC = InputWS.Cells(i + 1, "C")
+        
+        If Not ValueC = vbNullString Then
+            OutputWS.Cells(OutputRow, 2) = InputWS.Cells(i, 2) 'itemid
+            OutputWS.Cells(OutputRow, 3) = InputWS.Cells(i, 3) 'receipt alias
+            OutputWS.Cells(OutputRow, 4) = InputWS.Cells(i, 4) 'net qty sold
+            OutputWS.Cells(OutputRow, 5) = InputWS.Cells(i, 7) 'net sales
+            OutputRow = OutputRow + 1
+        ElseIf NextValueC = vbNullString Then
+            Debug.Print ("we did ittt! at line #" & CStr(i))
+            Exit For
+        End If
+    Next i
     
-    'Debug.Print (Rows(1).Height)
-    
+    OutputWS.Columns("E").NumberFormat = "[$$ -en-US]#,##0.00_);([$$ -en-US]#,##0.00)"
 
     Call MyOnTerminate
 End Sub
@@ -350,5 +384,6 @@ Function t()
     'Debug.Print (ActiveWorkbook.Sheets(1).Name)
     'Debug.Print (ActiveWorkbook.Worksheets.Count)
 End Function
+
 
 
