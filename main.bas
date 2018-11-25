@@ -1,6 +1,6 @@
 Option Explicit
 
-Dim Debugging As Boolean
+Public Debugging As Boolean
 
 Dim ScreenUpdateState As Boolean
 Dim StatusBarState  As Boolean
@@ -31,6 +31,31 @@ Function SetGlobalsToDefault()
     'End If
     
     CurrentRow = 0
+End Function
+
+Function LastRow(sh As Worksheet) 'Credit: https://www.rondebruin.nl/win/s3/win002.htm
+    On Error Resume Next
+    LastRow = sh.Cells.Find(What:="*", _
+                            After:=sh.Range("A1"), _
+                            Lookat:=xlPart, _
+                            LookIn:=xlFormulas, _
+                            SearchOrder:=xlByRows, _
+                            SearchDirection:=xlPrevious, _
+                            MatchCase:=False).row
+    On Error GoTo 0
+End Function
+
+
+Function LastCol(sh As Worksheet) 'Credit: https://www.rondebruin.nl/win/s3/win002.htm
+    On Error Resume Next
+    LastCol = sh.Cells.Find(What:="*", _
+                            After:=sh.Range("A1"), _
+                            Lookat:=xlPart, _
+                            LookIn:=xlFormulas, _
+                            SearchOrder:=xlByColumns, _
+                            SearchDirection:=xlPrevious, _
+                            MatchCase:=False).Column
+    On Error GoTo 0
 End Function
 
 Public Function MakeRowBold(rownumber As Long)
@@ -259,7 +284,7 @@ Function InsertItemMultiTotalsBySubDepartment()
 End Function
 
 'Version 0.2
-Sub ItemMultiTotals() 'ItemMultiTotalsBySubDepartment()
+Function ItemMultiTotals() 'ItemMultiTotalsBySubDepartment()
     Debug.Print ("hi")
     Debug.Print (TypeName(OutputWS))
     
@@ -274,7 +299,7 @@ Sub ItemMultiTotals() 'ItemMultiTotalsBySubDepartment()
     OutputWS.Activate
     
     Call MyOnTerminate
-End Sub
+End Function
 
 'Version 0.0
 Function CustomerMultiTotals()
@@ -289,7 +314,7 @@ Function CustomerMultiTotals()
 End Function
 
 'Version 0.1
-Sub OptimizedItemNetSales()
+Function OptimizedItemNetSales()
     Call MySetup
     
     Dim i As Long
@@ -370,7 +395,7 @@ Sub OptimizedItemNetSales()
     OutputWS.Columns("E").NumberFormat = "[$$ -en-US]#,##0.00_);([$$ -en-US]#,##0.00)"
 
     Call MyOnTerminate
-End Sub
+End Function
 
 
 Function t()
