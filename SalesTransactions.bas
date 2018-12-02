@@ -166,7 +166,7 @@ Public Function ProcessMergedSheet()
     
         If StringIsFound("Store", CellData) Then
             Debug.Print "ayy on " + CStr(i)
-            If RowIsBlank(i, , True) Then
+            If isB(i) Then
             'If IsEmpty(Range("A" + CStr(i))) Then
                 Debug.Print "zz"
             End If
@@ -194,9 +194,47 @@ Sub ProcessSalesTransactions()
     
 End Sub
 
-Function test()
+Public Function isB(RowNumber As Long) As Boolean
+    Dim MySheet As Worksheet
+    Dim ColCount As Long, i As Long
+    
+    isB = True 'We assume it's blank... until we can find a reason that it's not
+    Set MySheet = ActiveWorkbook.ActiveSheet
+    
+    Debug.Print (CStr(MySheet.UsedRange.Rows(RowNumber).Cells.SpecialCells(xlCellTypeBlanks).Count))
+    Debug.Print (MySheet.UsedRange.Rows(RowNumber).Cells.Count)
+    
+    ColCount = NumberOfColumns(RowNumber)
+    
+    For i = 1 To ColCount 'MySheet.UsedRange.Rows(RowNumber).End(xlToLeft).Column '.Columns.Count
+        Debug.Print (CStr(i) + ": " + CStr(MySheet.Cells(RowNumber, i)))
+    Next i
     
 End Function
+
+Public Function NumberOfColumns(RowNumber As Long, Optional SheetName As String) As Long
+    Dim MySheet As Worksheet
+
+    If SheetName = "" Then
+        Set MySheet = ActiveWorkbook.ActiveSheet
+    Else
+        Set MySheet = ActiveWorkbook.Sheets(SheetName)
+    End If
+    
+    Debug.Print (MySheet.Name)
+    
+    With MySheet
+        'credit: https://stackoverflow.com/a/35945397
+        NumberOfColumns = .UsedRange.Column + .UsedRange.Columns.Count - 1
+    End With
+    
+    Debug.Print (NumberOfColumns)
+End Function
+
+Sub test()
+    'NumberOfColumns (22)
+    Debug.Print (isB(22))
+End Sub
 
 Function test2()
     
