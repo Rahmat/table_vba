@@ -413,7 +413,6 @@ Public Function NumberOfColumns(RowNumber As Long, Optional SheetName As String)
         NumberOfColumns = .UsedRange.Column + .UsedRange.Columns.Count - 1
     End With
     
-    Debug.Print (NumberOfColumns)
 End Function
 
 Public Function RowIsBlank(RowNumber As Long) As Boolean
@@ -426,13 +425,12 @@ Public Function RowIsBlank(RowNumber As Long) As Boolean
     ColCount = NumberOfColumns(RowNumber)
     
     For i = 1 To ColCount 'MySheet.UsedRange.Rows(RowNumber).End(xlToLeft).Column '.Columns.Count
-        Debug.Print (CStr(i) + ": " + CStr(MySheet.Cells(RowNumber, i).Value))
-        If IsEmpty(MySheet.Cells(RowNumber, i).Value) Then
+        Debug.Print (CStr(i) + ": " + CStr(MySheet.Cells(RowNumber, i).Formula))
+        If Not MySheet.Cells(RowNumber, i).Formula = "" Then
             RowIsBlank = False
             Exit Function
         End If
     Next i
-    
 End Function
 
 'Testing

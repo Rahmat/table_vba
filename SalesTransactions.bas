@@ -14,7 +14,8 @@ Public Function ProcessMergedSheet()
     Dim MergedSheet As Worksheet
     Dim i As Long
     Dim CellData As String
-    
+    Dim t As Range
+    t.FormulaR1C1
     Set MergedSheet = ActiveWorkbook.Sheets("MergedSheet")
     MergedSheet.Activate
     
@@ -43,7 +44,7 @@ End Sub
 
 
 Sub test()
-    Debug.Print ("Is blank?: " + CStr(RowIsBlank(12)))
+    Debug.Print ("Is blank?: " + CStr(RowIsBlank(13)))
 End Sub
 
 Function test2()
