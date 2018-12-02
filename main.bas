@@ -58,12 +58,12 @@ Function LastCol(sh As Worksheet) 'Credit: https://www.rondebruin.nl/win/s3/win0
     On Error GoTo 0
 End Function
 
-Public Function MakeRowBold(rownumber As Long)
-    Range("A" + CStr(rownumber)).EntireRow.Font.Bold = True
+Public Function MakeRowBold(RowNumber As Long)
+    Range("A" + CStr(RowNumber)).EntireRow.Font.Bold = True
 End Function
 
-Public Function setrowfont(rownumber As Long, rowfont As String)
-    Range("A" + CStr(rownumber)).EntireRow.Font.Name = rowfont
+Public Function setrowfont(RowNumber As Long, rowfont As String)
+    Range("A" + CStr(RowNumber)).EntireRow.Font.Name = rowfont
 End Function
 
 Public Function MySetup()
@@ -397,6 +397,152 @@ Function OptimizedItemNetSales()
     Call MyOnTerminate
 End Function
 
+Public Function NumberOfColumns(RowNumber As Long, Optional SheetName As String) As Long
+    Dim MySheet As Worksheet
+
+    If SheetName = "" Then
+        Set MySheet = ActiveWorkbook.ActiveSheet
+    Else
+        Set MySheet = ActiveWorkbook.Sheets(SheetName)
+    End If
+    
+    Debug.Print (MySheet.Name)
+    
+    With MySheet
+        'credit: https://stackoverflow.com/a/35945397
+        NumberOfColumns = .UsedRange.Column + .UsedRange.Columns.Count - 1
+    End With
+    
+    Debug.Print (NumberOfColumns)
+End Function
+
+Public Function RowIsBlank(RowNumber As Long) As Boolean
+    Dim MySheet As Worksheet
+    Dim ColCount As Long, i As Long
+    
+    isB = True 'We assume it's blank... until we can find a reason that it's not
+    Set MySheet = ActiveWorkbook.ActiveSheet
+    
+    Debug.Print (CStr(MySheet.UsedRange.Rows(RowNumber).Cells.SpecialCells(xlCellTypeBlanks).Count))
+    Debug.Print (MySheet.UsedRange.Rows(RowNumber).Cells.Count)
+    
+    ColCount = NumberOfColumns(RowNumber)
+    
+    For i = 1 To ColCount 'MySheet.UsedRange.Rows(RowNumber).End(xlToLeft).Column '.Columns.Count
+        Debug.Print (CStr(i) + ": " + CStr(MySheet.Cells(RowNumber, i)))
+    Next i
+    
+End Function
+
+'Testing
+    'Lets say there's 3 sheets in the workbook, they're named: "Sheet1", "Sheet2", & "Other"
+    'ReturnSheetNames()         Returns: Collection("Sheet1", "Sheet2", "Other")
+    'ReturnSheetNames("Sheet")  Returns: Collection("Sheet1", "Sheet2")
+    'ReturnSheetNames("Oth")    Returns: Collection("Other")
+Public Function ReturnSheetNames(Optional WithString As String = "NOSTRINGSUPPLIEDBYUSER") As Collection
+    Dim sheet As Worksheet
+    Dim Result As New Collection
+    Dim CheckForString As Boolean
+    
+    If WithString <> "NOSTRINGSUPPLIEDBYUSER" Then
+        CheckForString = True
+    End If
+    
+    For Each sheet In ActiveWorkbook.Sheets
+        If CheckForString Then
+            If Not StringIsFound(WithString, sheet.Name) Then
+                'pass
+            Else
+                Result.Add sheet.Name
+            End If
+        Else
+            Result.Add sheet.Name
+        End If
+        Next sheet
+    
+    Set ReturnSheetNames = Result
+End Function
+
+'Testing:
+    'StringIsFound("t", "tt")   True
+    'StringIsFound("t", "TTT")  False
+    'StringIsFound("t", "zzzz") False
+Public Function StringIsFound(Needle As String, HayStack As String) As Boolean
+    If InStr(HayStack, Needle) > 0 Then
+        StringIsFound = True
+    End If
+End Function
+
+Public Function GetLastRow(SheetName) As String
+    Dim MySheet As Worksheet
+    Set MySheet = ActiveWorkbook.Sheets(SheetName)
+    
+    GetLastRow = MySheet.UsedRange.Rows(MySheet.UsedRange.Rows.Count).row 'Credit: https://www.thespreadsheetguru.com/blog/2014/7/7/5-different-ways-to-find-the-last-row-or-last-column-using-vba
+    'does Sheets(SheetName).UsedRange.Rows.Count not work?
+End Function
+
+Public Function ArrayLen(arr As Variant) As Integer 'credit: https://stackoverflow.com/a/48627091
+    ArrayLen = UBound(arr) - LBound(arr) + 1
+End Function
+
+Public Function inc(ByRef data As Long) 'credit: https://stackoverflow.com/a/46728639
+    data = data + 1
+    inc = data
+End Function
+
+'Example:
+    'Call MergeSheets(ReturnSheetNames("Sheet"), "MergedSheet")
+'Docs:
+    'SheetsToMerge: Collection expection
+Public Function MergeSheets(SheetsToMerge As Variant, OutputSheetName As String)
+    Application.CutCopyMode = True
+    
+    Dim sheet As Variant
+    
+    If WorksheetExists(OutputSheetName) Then
+        ClearSheet (OutputSheetName)
+    Else
+        CreateWorksheet (OutputSheetName)
+    End If
+    
+    For Each sheet In SheetsToMerge
+        If Debugging Then
+            Debug.Print ("Sheet name is: " + sheet)
+            Debug.Print ("Last row in OutputSheet currently is: " + CStr(GetLastRow(OutputSheetName)))
+        
+            'Debug.Print (Sheets(Sheet).UsedRange.Rows.Count)
+            Debug.Print ("Last col in OutputSheet currently is: " + CStr(Sheets(sheet).UsedRange.Columns.Count))
+        End If
+        
+        'so that we can access the data
+        Sheets(sheet).Select
+        
+        Dim RowCount As Long
+        Dim ColCount As Long
+        RowCount = Sheets(sheet).UsedRange.Rows.Count
+        ColCount = Sheets(sheet).UsedRange.Columns.Count
+        
+        'test.Range(.cells(1, 1), .cells(RowCount, ColCount).copy
+        Dim tempWorksheet As Worksheet
+        'Dim TempRange As Range
+        Set tempWorksheet = Sheets(sheet)
+        
+        'tempWorksheet.Range
+        With tempWorksheet
+            'Set TempRange = Range(.Cells(1, 1), .Cells(RowCount, ColCount))
+            'TempRange.Select
+            Range(.Cells(1, 1), .Cells(RowCount, ColCount)).Select
+        End With
+        
+        'tempWorksheet.Range(Cells(1, 1), Cells(RowCount, ColCount)).Select
+        Selection.Copy
+        'test.Range()
+        Sheets(OutputSheetName).Range("A" + CStr(GetLastRow(OutputSheetName) + 1)).PasteSpecial xlPasteValues
+        
+        Next sheet
+    
+    Application.CutCopyMode = False
+End Function
 
 Function t()
     Columns("A").NumberFormat = 0
