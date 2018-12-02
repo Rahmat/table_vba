@@ -1,5 +1,7 @@
 Option Explicit
 
+#Const developMode = True
+
 Public Debugging As Boolean
 
 Dim ScreenUpdateState As Boolean
@@ -406,8 +408,6 @@ Public Function NumberOfColumns(RowNumber As Long, Optional SheetName As String)
         Set MySheet = ActiveWorkbook.Sheets(SheetName)
     End If
     
-    Debug.Print (MySheet.Name)
-    
     With MySheet
         'credit: https://stackoverflow.com/a/35945397
         NumberOfColumns = .UsedRange.Column + .UsedRange.Columns.Count - 1
@@ -422,14 +422,15 @@ Public Function RowIsBlank(RowNumber As Long) As Boolean
     
     RowIsBlank = True 'We assume it's blank... until we can find a reason that it's not
     Set MySheet = ActiveWorkbook.ActiveSheet
-    
-    Debug.Print (CStr(MySheet.UsedRange.Rows(RowNumber).Cells.SpecialCells(xlCellTypeBlanks).Count))
-    Debug.Print (MySheet.UsedRange.Rows(RowNumber).Cells.Count)
-    
+        
     ColCount = NumberOfColumns(RowNumber)
     
     For i = 1 To ColCount 'MySheet.UsedRange.Rows(RowNumber).End(xlToLeft).Column '.Columns.Count
-        Debug.Print (CStr(i) + ": " + CStr(MySheet.Cells(RowNumber, i)))
+        Debug.Print (CStr(i) + ": " + CStr(MySheet.Cells(RowNumber, i).Value))
+        If IsEmpty(MySheet.Cells(RowNumber, i).Value) Then
+            RowIsBlank = False
+            Exit Function
+        End If
     Next i
     
 End Function
@@ -555,6 +556,8 @@ Function t()
     'Debug.Print (ActiveWorkbook.Sheets(1).Name)
     'Debug.Print (ActiveWorkbook.Worksheets.Count)
 End Function
+
+
 
 
 

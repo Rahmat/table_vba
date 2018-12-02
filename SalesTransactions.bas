@@ -1,5 +1,15 @@
 Option Explicit
 
+Public Function MergeTransactionSheets()
+    If Not WorksheetExists("MergedSheet") Then
+        Call MergeSheets(ReturnSheetNames("Sheet"), "MergedSheet")
+    End If
+    
+    If Not WorksheetExists("MergedSheet") Then
+        Call Err.Raise(1, "SalesTransactions", "Error creating merged sheet")
+    End If
+End Function
+
 Public Function ProcessMergedSheet()
     Dim MergedSheet As Worksheet
     Dim i As Long
@@ -12,37 +22,28 @@ Public Function ProcessMergedSheet()
         CellData = CStr(MergedSheet.Cells(i, 2)) 'go down each row, getting the data in the second column (b)
     
         If StringIsFound("Store", CellData) Then
-            Debug.Print "ayy on " + CStr(i)
+            Debug.Print "'Store' found at line " + CStr(i)
             If RowIsBlank(i) Then
             'If IsEmpty(Range("A" + CStr(i))) Then
-                Debug.Print "zz"
+                Debug.Print "Also, this row blank!"
             End If
         End If
         
         Next i
 End Function
 
- 
 Sub ProcessSalesTransactions()
-    Debug.Print ("Starting...")
+    Debug.Print ("Starting! " + CStr(Now))
     
-    Call MySetup
-    'Debugging = False
+    Call MySetup    'Debugging = False
     
-    If Not WorksheetExists("MergedSheet") Then
-        Call MergeSheets(ReturnSheetNames("Sheet"), "MergedSheet")
-    End If
-    
-    If Not WorksheetExists("MergedSheet") Then
-        Call Err.Raise(1, "SalesTransactions", "Error creating merged sheet")
-    End If
-    
+    Call MergeTransactionSheets
     Call ProcessMergedSheet
-    
 End Sub
 
 
 Sub test()
+    Debug.Print ("Is blank?: " + CStr(RowIsBlank(12)))
 End Sub
 
 Function test2()
