@@ -420,7 +420,7 @@ Public Function RowIsBlank(RowNumber As Long) As Boolean
     Dim MySheet As Worksheet
     Dim ColCount As Long, i As Long
     
-    isB = True 'We assume it's blank... until we can find a reason that it's not
+    RowIsBlank = True 'We assume it's blank... until we can find a reason that it's not
     Set MySheet = ActiveWorkbook.ActiveSheet
     
     Debug.Print (CStr(MySheet.UsedRange.Rows(RowNumber).Cells.SpecialCells(xlCellTypeBlanks).Count))
