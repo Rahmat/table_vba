@@ -425,7 +425,7 @@ Public Function RowIsBlank(RowNumber As Long) As Boolean
     ColCount = NumberOfColumns(RowNumber)
     
     For i = 1 To ColCount 'MySheet.UsedRange.Rows(RowNumber).End(xlToLeft).Column '.Columns.Count
-        Debug.Print (CStr(i) + ": " + CStr(MySheet.Cells(RowNumber, i).Formula))
+        'Debug.Print (CStr(i) + ": " + CStr(MySheet.Cells(RowNumber, i).Formula))
         If Not MySheet.Cells(RowNumber, i).Formula = "" Then
             RowIsBlank = False
             Exit Function
@@ -480,8 +480,8 @@ Public Function GetLastRow(SheetName) As String
     'does Sheets(SheetName).UsedRange.Rows.Count not work?
 End Function
 
-Public Function ArrayLen(arr As Variant) As Integer 'credit: https://stackoverflow.com/a/48627091
-    ArrayLen = UBound(arr) - LBound(arr) + 1
+Public Function ArrayLen(Arr As Variant) As Integer 'credit: https://stackoverflow.com/a/48627091
+    ArrayLen = UBound(Arr) - LBound(Arr) + 1
 End Function
 
 Public Function inc(ByRef data As Long) 'credit: https://stackoverflow.com/a/46728639
@@ -489,28 +489,46 @@ Public Function inc(ByRef data As Long) 'credit: https://stackoverflow.com/a/467
     inc = data
 End Function
 
+'credit: https://stackoverflow.com/a/30025752 should be called IsArrayAllocated
+Function IsVarAllocated(Arr As Variant) As Boolean
+        On Error Resume Next
+        IsVarAllocated = IsArray(Arr) And _
+                           Not IsError(LBound(Arr, 1)) And _
+                           LBound(Arr, 1) <= UBound(Arr, 1)
+End Function
+
 'Example:
-    'Call MergeSheets(ReturnSheetNames("Sheet"), "MergedSheet")
+    'Call MergeSheets("MergedSheet", ReturnSheetNames("Sheet"))
+    'Call MergeSheets("MergedSheet")
+    'Call MergeSheets()
 'Docs:
     'SheetsToMerge: Collection expection
-Public Function MergeSheets(SheetsToMerge As Variant, OutputSheetName As String)
-    Application.CutCopyMode = True
-    
+Public Function MergeSheets(Optional OutputSheetName As String = "DefaultValue", Optional SheetsToMerge As Variant)
     Dim sheet As Variant
     
+    If OutputSheetName = "DefaultValue" Then
+        OutputSheetName = "MergedSheet"
+    End If
+    
+    If Not IsVarAllocated(SheetsToMerge) Then
+        Set SheetsToMerge = ReturnSheetNames()
+    End If
+   
     If WorksheetExists(OutputSheetName) Then
         ClearSheet (OutputSheetName)
     Else
         CreateWorksheet (OutputSheetName)
     End If
     
+    Application.CutCopyMode = True
+    
     For Each sheet In SheetsToMerge
         If Debugging Then
-            Debug.Print ("Sheet name is: " + sheet)
-            Debug.Print ("Last row in OutputSheet currently is: " + CStr(GetLastRow(OutputSheetName)))
+            'Debug.Print ("Sheet name is: " + sheet)
+            'Debug.Print ("Last row in OutputSheet currently is: " + CStr(GetLastRow(OutputSheetName)))
         
-            'Debug.Print (Sheets(Sheet).UsedRange.Rows.Count)
-            Debug.Print ("Last col in OutputSheet currently is: " + CStr(Sheets(sheet).UsedRange.Columns.Count))
+            ''''Debug.Print (Sheets(Sheet).UsedRange.Rows.Count)
+            'Debug.Print ("Last col in OutputSheet currently is: " + CStr(Sheets(sheet).UsedRange.Columns.Count))
         End If
         
         'so that we can access the data
