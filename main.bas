@@ -440,7 +440,7 @@ End Function
     'ReturnSheetNames("Oth")    Returns: Collection("Other")
 Public Function ReturnSheetNames(Optional WithString As String = "NOSTRINGSUPPLIEDBYUSER") As Collection
     Dim sheet As Worksheet
-    Dim Result As New Collection
+    Dim result As New Collection
     Dim CheckForString As Boolean
     
     If WithString <> "NOSTRINGSUPPLIEDBYUSER" Then
@@ -452,14 +452,14 @@ Public Function ReturnSheetNames(Optional WithString As String = "NOSTRINGSUPPLI
             If Not StringIsFound(WithString, sheet.Name) Then
                 'pass
             Else
-                Result.Add sheet.Name
+                result.Add sheet.Name
             End If
         Else
-            Result.Add sheet.Name
+            result.Add sheet.Name
         End If
         Next sheet
     
-    Set ReturnSheetNames = Result
+    Set ReturnSheetNames = result
 End Function
 
 'Testing:
@@ -480,21 +480,21 @@ Public Function GetLastRow(SheetName) As String
     'does Sheets(SheetName).UsedRange.Rows.Count not work?
 End Function
 
-Public Function ArrayLen(Arr As Variant) As Integer 'credit: https://stackoverflow.com/a/48627091
-    ArrayLen = UBound(Arr) - LBound(Arr) + 1
+Public Function ArrayLen(arr As Variant) As Integer 'credit: https://stackoverflow.com/a/48627091
+    ArrayLen = UBound(arr) - LBound(arr) + 1
 End Function
 
-Public Function inc(ByRef data As Long) 'credit: https://stackoverflow.com/a/46728639
-    data = data + 1
-    inc = data
+Public Function inc(ByRef Data As Long) 'credit: https://stackoverflow.com/a/46728639
+    Data = Data + 1
+    inc = Data
 End Function
 
 'credit: https://stackoverflow.com/a/30025752 should be called IsArrayAllocated
-Function IsVarAllocated(Arr As Variant) As Boolean
+Function IsVarAllocated(arr As Variant) As Boolean
         On Error Resume Next
-        IsVarAllocated = IsArray(Arr) And _
-                           Not IsError(LBound(Arr, 1)) And _
-                           LBound(Arr, 1) <= UBound(Arr, 1)
+        IsVarAllocated = IsArray(arr) And _
+                           Not IsError(LBound(arr, 1)) And _
+                           LBound(arr, 1) <= UBound(arr, 1)
 End Function
 
 'Example:
