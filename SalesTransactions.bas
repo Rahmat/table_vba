@@ -167,7 +167,7 @@ Public Function ProcessSnapDiscounts()
                 End If
             Next j
             
-            StoreCoupons.Add (SumColl(TmpStoreCoupons) / 2)
+            StoreCoupons.Add (SumColl(TmpStoreCoupons))
             Set TmpStoreCoupons = Nothing
             Debug.Print ("EmptiedTmpColl")
             
